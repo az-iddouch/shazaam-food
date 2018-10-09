@@ -1,0 +1,3 @@
+# Shazaam food
+
+a website build to practice node js , mongoDB and friends ...
