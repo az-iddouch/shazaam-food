@@ -1,5 +1,21 @@
 const mongoose = require('mongoose');
 const Store = mongoose.model('Store');
+const multer = require('multer');
+const jimp = require('jimp');
+
+const multerOptions = {
+  storage: multer.memoryStorage(),
+  fileFilter(req, file, next) {
+    const isPhoto = file.mimetype.startsWith('image/');
+    if (isPhoto) {
+      // if we pass it something as first argument it assumes that it's an error
+      // and the second parametre is the thing thatwe'll pass
+      next(null, true);
+    } else {
+      next({ message: "that file type isn't allowed" }, false);
+    }
+  }
+};
 
 exports.homePage = (req, res) => {
   res.render('home');
@@ -8,6 +24,9 @@ exports.homePage = (req, res) => {
 exports.addStore = (req, res) => {
   res.render('editStore', { title: 'Add Store' });
 };
+
+// for a single field named photo
+exports.upload = multer(multerOptions).single('photo');
 
 exports.createStore = async (req, res) => {
   const store = await new Store(req.body).save();
@@ -37,6 +56,7 @@ exports.editStore = async (req, res) => {
 
 exports.updateStore = async (req, res) => {
   // set location data to be a Point
+  // because after update mongoDB doesn't give it the type of a Point
   req.body.location.type = 'Point';
   // find and update the store
   const store = await Store.findOneAndUpdate({ _id: req.params.id }, req.body, {
