@@ -37,13 +37,20 @@ const StoreSchema = new mongoose.Schema({
   photo: String
 });
 
-StoreSchema.pre('save', function(next) {
+StoreSchema.pre('save', async function(next) {
   // if the name is not modefied
   if (!this.isModified('name')) {
     next(); // Skip it
     return; // Stop this function from running
   }
   this.slug = slug(this.name);
+  // find other stores that have the same slug
+  const slugRegEx = new RegExp(`^(${this.slug})((-[0-9]*$)?)`, 'i');
+  // to use Store before it's created we use this.construtor
+  const storeWithSlug = await this.constructor.find({ slug: slugRegEx });
+  if(storeWithSlug.length) {
+    this.slug = `${this.slug}-${storeWithSlug.length + 1}`;
+  }
   next();
 });
 
