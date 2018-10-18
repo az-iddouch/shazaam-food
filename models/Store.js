@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 mongoose.Promise = global.Promise; // global is like Window in the browser
 const slug = require('slugs');
 
-const StoreSchema = new mongoose.Schema({
+const storeSchema = new mongoose.Schema({
   name: {
     type: String,
     trim: true,
@@ -37,7 +37,7 @@ const StoreSchema = new mongoose.Schema({
   photo: String
 });
 
-StoreSchema.pre('save', async function(next) {
+storeSchema.pre('save', async function(next) {
   // if the name is not modefied
   if (!this.isModified('name')) {
     next(); // Skip it
@@ -54,6 +54,12 @@ StoreSchema.pre('save', async function(next) {
   next();
 });
 
-// TODO make resiliant so slugs are unique
+storeSchema.statics.getTagsList = function() {
+  return this.aggregate([
+    { $unwind: '$tags' },
+    { $group: { _id: '$tags', count: { $sum: 1 } } },
+    { $sort: { count: -1 } } // we can either do asc or desc (1 or -1)
+  ]);
+}
 
-module.exports = mongoose.model('Store', StoreSchema);
+module.exports = mongoose.model('Store', storeSchema);
