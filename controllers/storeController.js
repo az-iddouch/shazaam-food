@@ -96,7 +96,10 @@ exports.showStore = async (req, res, next) => {
 };
 
 exports.getStoresByTag = async (req, res) => {
-  const tags = await Store.getTagsList();
   const tag = req.params.tag;
-  res.render('tags', {tags, title: 'tags', tag});
-}
+  const tagQuery = tag || { $exists: true };
+  const tagsPromise = Store.getTagsList();
+  const storesPromise = Store.find({ tags: tagQuery }); // where tags includes tag
+  const [tags, stores] = await Promise.all([tagsPromise, storesPromise]); // because we decided to run both promises at once for optimization purposes
+  res.render('tags', { tags, title: 'tags', tag, stores });
+};
