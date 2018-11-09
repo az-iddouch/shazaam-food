@@ -34,7 +34,12 @@ const storeSchema = new mongoose.Schema({
       required: 'You must supply an Address !'
     }
   },
-  photo: String
+  photo: String,
+  author: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: 'You must supply an author'
+  }
 });
 
 storeSchema.pre('save', async function(next) {
@@ -48,7 +53,7 @@ storeSchema.pre('save', async function(next) {
   const slugRegEx = new RegExp(`^(${this.slug})((-[0-9]*$)?)`, 'i');
   // to use Store before it's created we use this.construtor
   const storeWithSlug = await this.constructor.find({ slug: slugRegEx });
-  if(storeWithSlug.length) {
+  if (storeWithSlug.length) {
     this.slug = `${this.slug}-${storeWithSlug.length + 1}`;
   }
   next();
@@ -60,6 +65,6 @@ storeSchema.statics.getTagsList = function() {
     { $group: { _id: '$tags', count: { $sum: 1 } } },
     { $sort: { count: -1 } } // we can either do asc or desc (1 or -1)
   ]);
-}
+};
 
 module.exports = mongoose.model('Store', storeSchema);
