@@ -108,3 +108,42 @@ exports.getStoresByTag = async (req, res) => {
   const [tags, stores] = await Promise.all([tagsPromise, storesPromise]); // because we decided to run both promises at once for optimization purposes
   res.render('tags', { tags, title: 'tags', tag, stores });
 };
+
+exports.searchStores = async (req, res) => {
+  const stores = await Store.find(
+    {
+      // because we indexed the title and description using 'text'
+      // so now we can search on all the fields that are indexed with 'text'
+      $text: {
+        $search: req.query.q
+      }
+    },
+    {
+      // we project a field "score" with a hidden score that mongo calculates
+      // to use it in ordering our sent data
+      score: { $meta: 'textScore' }
+    }
+  )
+    .sort({
+      score: { $meta: 'textScore' }
+    })
+    .limit(5);
+  res.json(stores);
+};
+
+exports.mapStores = async (req, res) => {
+  const coordinates = [req.query.lng, req.query.lat].map(parseFloat);
+  const q = {
+    location: {
+      $near: {
+        $geometry: {
+          type: 'Point',
+          coordinates
+        },
+        $maxDistance: 10000 //10 km
+      }
+    }
+  };
+  const stores = await Store.find(q).select('slug name description location');
+  res.json(stores);
+};
