@@ -56,7 +56,7 @@ exports.createStore = async (req, res) => {
 
 exports.getStores = async (req, res) => {
   // 1. Query the database for the list of all Stores
-  const stores = await Store.find();
+  const stores = await Store.find().populate('reviews');
 
   res.render('stores', { title: 'stores', stores });
 };
@@ -169,4 +169,9 @@ exports.showHeartedStores = async (req, res) => {
     _id: { $in: req.user.hearts }
   });
   res.render('stores', { title: 'Hearted stores', stores });
+};
+
+exports.getTopStores = async (req, res) => {
+  const stores = await Store.getTopStores();
+  res.render('topStores', { stores, title: 'Top stores.' });
 };

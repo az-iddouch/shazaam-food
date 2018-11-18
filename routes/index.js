@@ -59,6 +59,8 @@ router.get('/hearts', authController.isLoggedIn, catchErrors(storeController.sho
 
 router.post('/reviews/:id', authController.isLoggedIn, catchErrors(reviewsController.addReview));
 
+router.get('/top', catchErrors(storeController.getTopStores));
+
 // API
 router.get('/api/search', catchErrors(storeController.searchStores));
 router.get('/api/stores/near', catchErrors(storeController.mapStores));

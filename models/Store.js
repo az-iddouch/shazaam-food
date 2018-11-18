@@ -81,6 +81,22 @@ storeSchema.statics.getTagsList = function() {
   ]);
 };
 
+storeSchema.statics.getTopStores = function() {
+  return this.aggregate([
+    // lookup stores and populate their reviews . It's like creating a virtual field same as bellow
+    // reviews = mongoDB takes the model name and lowercase it and add an 's' at the end.
+    { $lookup: { from: 'reviews', localField: '_id', foreignField: 'store', as: 'reviews' } },
+    // filter for only stems that have 2 or more reviews
+    { $match: { 'reviews.1': { $exists: true } } },
+    // add the average rating field
+    { $addFields: { averageRating: { $avg: '$reviews.rating' } } },
+    // sort it by our new field, highest reviews first
+    { $sort: { averageRating: -1 } },
+    // limit to at most 10
+    { $limit: 10 }
+  ]);
+};
+
 // find reviews where the stores _id property === reviews store property
 storeSchema.virtual('reviews', {
   ref: 'Review', // what model to link ?
