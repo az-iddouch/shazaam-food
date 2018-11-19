@@ -1,5 +1,0 @@
-{
-  "version": 2,
-  "name": "shazaam-coffeeshops",
-  "builds": [{ "src": "*.js", "use": "@now/node" }]
-}
